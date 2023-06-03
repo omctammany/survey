@@ -5,18 +5,10 @@ import gspread
 import json
 import csv
 
-gc = gspread.service_account(filename='creds/survey-bot.json')
-
-SurveyByDate = gc.open_by_key("12jT7RY74jlFLJwBrSymRPGO7i6yUGfwumsMvMN15fFU")
-ws = SurveyByDate.get_worksheet(0)
-SurveyByPark = gc.open_by_key("10y5NUlQI5Mh8IFnBTC-79W9Nzo4iJisl0S3a6tVX9dw")
-SurveyMaster = gc.open_by_key("1E3rIrerqHSpjH5Vq1PSHGljbxxETVG58-v1c7eHItNw")
-# st.write(SurveyByDate.sheet1.get('A1')[0][0])
-# sh.add_worksheet(title="Park 2", rows=100, cols=20)
+st.header("Data Collection Form")
 
 survey = ss.StreamlitSurvey()
 
-# text = survey.text_input("Test text", id="ttt")
 survey.selectbox("Name", options=["Angela", "Daniel", "Leina"], id="name")
 survey.dateinput("Date", id="date")
 survey.timeinput("Time", id="time")
@@ -48,35 +40,62 @@ if result == "Other":
 	survey.text_input("Other (please specify)", id="interventionResultOther")
 survey.text_area("Any other notes:", id="notes")
 
-headersS = ""
-dataS = ""
-headers = []
-data = []
-orig_survey = json.loads(survey.to_json())
+def submit():
+	# first parse the survey into the right format for writing
+	headers = []
+	data = []
+	orig_survey = json.loads(survey.to_json())
 
-if "activityOther" not in orig_survey:
-	orig_survey["activityOther"] = {"value": ""}
-if "advertisingOther" not in orig_survey:
-	orig_survey["advertisingOther"] = {"value": ""}
-if "behaviorOther" not in orig_survey:
-	orig_survey["behaviorOther"] = {"value": ""}
-if "interventionResultOther" not in orig_survey:
-	orig_survey["interventionResultOther"] = {"value": ""}
+	if "activityOther" not in orig_survey:
+		orig_survey["activityOther"] = {"value": ""}
+	if "advertisingOther" not in orig_survey:
+		orig_survey["advertisingOther"] = {"value": ""}
+	if "behaviorOther" not in orig_survey:
+		orig_survey["behaviorOther"] = {"value": ""}
+	if "interventionResultOther" not in orig_survey:
+		orig_survey["interventionResultOther"] = {"value": ""}
 
-for key in orig_survey:
-	headersS += str(key) + ","
-	headers.append(key)
-	datum = orig_survey[key]["value"]
-	if isinstance(datum, list):
-		s = '|'.join(datum)
-		data.append(s)
-		dataS += str(s) + ","
-	else:
-		data.append(datum)
-		dataS += str(datum) + ","
+	for key in orig_survey:
+		headers.append(key)
+		datum = orig_survey[key]["value"]
+		if isinstance(datum, list):
+			s = '|'.join(datum)
+			data.append(s)
+		else:
+			data.append(datum)
 
-st.write(len(data))
-# st.write(headersS + "\n" + str(dataS))
-ws.update('A1:Z1', [headers])
-ws.update('A2:Z2', [data])
-# ws.update('A1:B1', [[5, 6]])
+	# get setup with the service account for google sheets
+	gc = gspread.service_account(filename='creds/survey-bot.json')
+
+	# check if the worksheet already exists, and create one if it doesn't
+	SurveyByDate = gc.open_by_key("12jT7RY74jlFLJwBrSymRPGO7i6yUGfwumsMvMN15fFU")
+	try:
+		wsDate = SurveyByDate.worksheet(orig_survey["date"]["value"])
+	except:
+		wsDate = SurveyByDate.add_worksheet(title=orig_survey["date"]["value"], rows=10000, cols=26)
+
+	SurveyByPark = gc.open_by_key("10y5NUlQI5Mh8IFnBTC-79W9Nzo4iJisl0S3a6tVX9dw")
+	try:
+		wsPark = SurveyByPark.worksheet(orig_survey["location"]["value"])
+	except:
+		wsPark = SurveyByPark.add_worksheet(title=orig_survey["location"]["value"], rows=10000, cols=26)
+
+	SurveyMaster = gc.open_by_key("1E3rIrerqHSpjH5Vq1PSHGljbxxETVG58-v1c7eHItNw")
+	wsMaster = SurveyMaster.get_worksheet(0)
+
+	# write to the worksheets, adding the headers if they don't exist
+	wss = [wsDate, wsPark, wsMaster]
+	for ws in wss:
+		cols = ws.col_values(1)
+		l = len(cols)
+
+		if len(cols) < 1:
+			ws.update('A1:Z1', [headers])
+			l = 1
+
+		ws.update('A'+str(l+1)+':Z'+str(l+1), [data])
+
+
+st.file_uploader("Add picture", accept_multiple_files=True)
+
+st.button("Submit", on_click=submit)
