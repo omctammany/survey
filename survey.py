@@ -1,9 +1,23 @@
 import streamlit as st
 import streamlit_survey as ss
-# import pandas as pd
 import gspread
 import json
 import csv
+from PIL import Image
+import os
+import cloudinary
+# import cloudinary.file_uploader
+# import cloudinary.api
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
+
+# Config
+cloudinary.config(
+  cloud_name = "dnrxpsxic",
+  api_key = "947682472312968",
+  api_secret = "EJ4SC2G8ORcX_2cQWMFBrNwiXBY",
+  secure = True
+)
 
 st.header("Data Collection Form")
 
@@ -55,10 +69,27 @@ def submit():
 	if "interventionResultOther" not in orig_survey:
 		orig_survey["interventionResultOther"] = {"value": ""}
 
+	# upload pics to cloudinary
+	urls = []
+	for pic in pics:
+		file_details = {"FileName":pic.name,"FileType":pic.type}
+		img = Image.open(pic)
+		path = os.path.join("temp",pic.name)
+		with open(path,"wb") as f: 
+			f.write(pic.getbuffer())
+
+		ret = upload(path, public_id=pic.name)
+		urls.append(ret["url"])
+
+	orig_survey["pictures"] = {"value": urls}
+
 	for key in orig_survey:
 		headers.append(key)
 		datum = orig_survey[key]["value"]
-		if isinstance(datum, list):
+		if key == "pictures":
+			s = '\n'.join(datum)
+			data.append(s)
+		elif isinstance(datum, list):
 			s = '|'.join(datum)
 			data.append(s)
 		else:
@@ -94,8 +125,9 @@ def submit():
 			l = 1
 
 		ws.update('A'+str(l+1)+':AA'+str(l+1), [data])
+	st.success("yay")
 
 
-st.file_uploader("Add picture", accept_multiple_files=True, type=["jpg", "png"])
+pics = st.file_uploader("Add picture", accept_multiple_files=True, type=["jpg", "png"])
 
 st.button("Submit", on_click=submit)
