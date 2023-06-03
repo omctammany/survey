@@ -3,7 +3,8 @@ import streamlit as st
 # import pandas as pd
 import gspread
 
-gc = gspread.oauth()
+gc = gspread.service_account(filename='creds/survey-bot.json')
+
 sh = gc.open("Survey By Date")
 print(sh.sheet1.get('A1'))
 
