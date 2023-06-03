@@ -72,13 +72,13 @@ def submit():
 	try:
 		wsDate = SurveyByDate.worksheet(orig_survey["date"]["value"])
 	except:
-		wsDate = SurveyByDate.add_worksheet(title=orig_survey["date"]["value"], rows=10000, cols=26)
+		wsDate = SurveyByDate.add_worksheet(title=orig_survey["date"]["value"], rows=10000, cols=27)
 
 	SurveyByPark = gc.open_by_key("10y5NUlQI5Mh8IFnBTC-79W9Nzo4iJisl0S3a6tVX9dw")
 	try:
 		wsPark = SurveyByPark.worksheet(orig_survey["location"]["value"])
 	except:
-		wsPark = SurveyByPark.add_worksheet(title=orig_survey["location"]["value"], rows=10000, cols=26)
+		wsPark = SurveyByPark.add_worksheet(title=orig_survey["location"]["value"], rows=10000, cols=27)
 
 	SurveyMaster = gc.open_by_key("1E3rIrerqHSpjH5Vq1PSHGljbxxETVG58-v1c7eHItNw")
 	wsMaster = SurveyMaster.get_worksheet(0)
@@ -90,12 +90,12 @@ def submit():
 		l = len(cols)
 
 		if len(cols) < 1:
-			ws.update('A1:Z1', [headers])
+			ws.update('A1:AA1', [headers])
 			l = 1
 
-		ws.update('A'+str(l+1)+':Z'+str(l+1), [data])
+		ws.update('A'+str(l+1)+':AA'+str(l+1), [data])
 
 
-st.file_uploader("Add picture", accept_multiple_files=True)
+st.file_uploader("Add picture", accept_multiple_files=True, type=["jpg", "png"])
 
 st.button("Submit", on_click=submit)
