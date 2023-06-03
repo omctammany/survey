@@ -4,7 +4,7 @@ import gspread
 import json
 import csv
 from PIL import Image
-import os
+import os, shutil
 import cloudinary
 # import cloudinary.file_uploader
 # import cloudinary.api
@@ -68,6 +68,18 @@ def submit():
 		orig_survey["behaviorOther"] = {"value": ""}
 	if "interventionResultOther" not in orig_survey:
 		orig_survey["interventionResultOther"] = {"value": ""}
+
+	# delete previous picures in the temp folder so we don't go over 1gb resource limit
+	for pic in os.listdir("temp"):
+		file_path = os.path.join("temp", pic)
+		try:
+			if os.path.isfile(file_path) or os.path.islink(file_path):
+				os.unlink(file_path)
+			elif os.path.isdir(file_path):
+				shutil.rmtree(file_path)
+		except Exception as e:
+			print('Failed to delete %s. Reason: %s' % (file_path, e))
+
 
 	# upload pics to cloudinary
 	urls = []
