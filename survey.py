@@ -1,16 +1,25 @@
 import streamlit as st
-import streamlit_survey as ss
-import pandas as pd
+# import streamlit_survey as ss
+# import pandas as pd
+import gspread
 
-survey = ss.StreamlitSurvey()
+gc = gspread.oauth()
+sh = gc.open("Survey By Date")
+print(sh.sheet1.get('A1'))
 
-text = survey.text_input("Test text", id="ttt")
-survey.selectbox("Selection box:", options=["Option 1", "Option 2", "Option 3", "etc"])
-survey.multiselect("Multiple choice:", options=["Option 1", "Option 2", "Option 3", "etc"])
-survey.checkbox("Check box")
-survey.dateinput("Date input:")
-survey.timeinput("Time input:")
-survey.text_area("Area input:")
-st.number_input("Number input:", min_value=0, max_value=100, value=50)
+# survey = ss.StreamlitSurvey()
 
-survey.to_json()
+# text = survey.text_input("Test text", id="ttt")
+# survey.selectbox("Selection box:", options=["Option 1", "Option 2", "Option 3", "etc"])
+# survey.multiselect("Multiple choice:", options=["Option 1", "Option 2", "Option 3", "etc"])
+# survey.checkbox("Check box")
+# survey.dateinput("Date input:")
+# survey.timeinput("Time input:")
+# survey.text_area("Area input:")
+# st.number_input("Number input:", min_value=0, max_value=100, value=50)
+
+# survey.to_json()
+
+
+# gc = gspread.service_account()
+# wks = gc.open
