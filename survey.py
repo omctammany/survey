@@ -146,9 +146,8 @@ def submit():
 	orig_survey = json.loads(survey.to_json())
 
 	# add the data in others to the lists, instead of having it be a separate column
-	if "Other" in ca:
-		orig_survey["Type of Activity"]["value"].remove("Other")
-		orig_survey["Type of Activity"]["value"].append(orig_survey["activityOther"]["value"])
+	if ca == "Other":
+		orig_survey["Type of Activity"]["value"] = orig_survey["activityOther"]["value"]
 	if "Other" in a:
 		orig_survey["Advertising"]["value"].remove("Other")
 		orig_survey["Advertising"]["value"].append(orig_survey["advertisingOther"]["value"])
@@ -229,9 +228,9 @@ def submit():
 
 	SurveyByPark = gc.open_by_key("10y5NUlQI5Mh8IFnBTC-79W9Nzo4iJisl0S3a6tVX9dw")
 	try:
-		wsPark = SurveyByPark.worksheet(orig_survey["Location"]["value"])
+		wsPark = SurveyByPark.worksheet(orig_survey["Park"]["value"])
 	except:
-		wsPark = SurveyByPark.add_worksheet(title=orig_survey["Location"]["value"], rows=10000, cols=27)
+		wsPark = SurveyByPark.add_worksheet(title=orig_survey["Park"]["value"], rows=10000, cols=27)
 
 	SurveyMaster = gc.open_by_key("1E3rIrerqHSpjH5Vq1PSHGljbxxETVG58-v1c7eHItNw")
 	wsMaster = SurveyMaster.get_worksheet(0)
